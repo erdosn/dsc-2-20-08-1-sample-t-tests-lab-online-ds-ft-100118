@@ -134,6 +134,7 @@ In order to show a significant increase in the sales performance, we need to cal
 ```python
 ## Import the packages
 import numpy as np
+import pandas as pd
 from scipy import stats 
 import math
 
@@ -147,29 +148,34 @@ Identify the pieces of information you’ll need to calculate the test statistic
 
 ```python
 # Read the sales data into NumPy array. Alternatively, you can also read this data into a Pandas dataframe
-sample = None
+sample = np.array([122.09, 100.64, 125.77, 120.32, 118.25,  96.47, 111.4 ,  80.66,
+       110.77, 111.14, 102.9 , 114.54,  88.09,  98.59,  87.07, 110.43,
+       101.9 , 123.89,  97.03, 116.23, 108.3 , 112.82, 119.57, 131.38,
+       128.39])
 
 # Population mean (μ)
-mu = None
+mu = 100
 
 # Sample mean (x̄) using NumPy mean()
-x_bar= None
+x_bar= sample.mean()
 
 # Sample Stadrad Deviation (sigma) using Numpy
-sigma = None
+sigma = sample.std()
 
 # Sample size (n)
-n = None
+n = sample.size
 
 # Degrees of Freedom
-df =None
+df = n-1
 
 # Difference in sample mean 
-diff =None
+diff = x_bar-mu
 
 
 # Print the findings
 
+print ('The sample contains', n, 'observations, having a mean of', x_bar, "and a standard deviation (sigma) = ", sigma, 
+       ", with", df, 'degrees of freedom. The difference between sample and population means is:', diff)
 
 # The sample contains 25 observations, having a mean of 109.5456 
 # and a standard deviation (sigma) =  13.069276668584225 , 
@@ -189,17 +195,24 @@ Let's also try drawing a distribution from example values to check for normality
 
 ```python
 # Plot the sample distribution
+sns.set(color_codes=True)
+sns.set(rc={'figure.figsize':(12,10)})
+sns.distplot(sample)
 ```
 
+    /anaconda3/lib/python3.6/site-packages/matplotlib/axes/_axes.py:6462: UserWarning: The 'normed' kwarg is deprecated, and has been replaced by the 'density' kwarg.
+      warnings.warn("The 'normed' kwarg is deprecated, and has been "
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x1a1b4de4a8>
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x1a158eb400>
 
 
 
 
-![png](index_files/index_17_1.png)
+![png](index_files/index_17_2.png)
 
 
 At this point, we have some idea of difference between our sample and the population mean. To review, we have a null hypothesis that states there's no increase in sales performance, and an alternate hypothesis that states that there is an increase in sales performance - post training.
@@ -219,11 +232,24 @@ Where $S$ stands for standard deviation, which we already defined as 'sigma'.
 
 
 ```python
+def t_value(pop_mean, sample):
+    return (sample.mean()-pop_mean)/(sample.std()/np.sqrt(sample.size))
+```
+
+
+```python
 # Calculate Sigma
-t = None
+t = t_value(mu, sample=sample)
 t
 # 3.6519236075802097
 ```
+
+
+
+
+    3.6519236075802097
+
+
 
 > Note that a positive t value indicates that the sample mean is greater than population mean and vice versa. This means that sample's average sales performnace post-training is greater than average population sales performance. 
 
@@ -233,26 +259,24 @@ Lets try visualizing the calculated t-statistic with a PDF.
 
 
 ```python
-# generate points on the x axis between -10 and 10:
-xs = None
+# generate 200 points on the x axis between -5 and 5:
+xs = np.linspace(-5, 5, 200)
 # use stats.t.pdf to get values on the probability density function for the t-distribution
 # the second argument is the degrees of freedom
-ys = None
+ys = stats.t.pdf(xs, df, 0, 1)
 # initialize a matplotlib "figure"
-fig = None
+fig = plt.figure(figsize=(10, 10))
 
 # get the current "axis" out of the figure
-ax = None
+ax = fig.gca()
 
 # plot the lines using matplotlib's plot function:
+ax.plot(xs, ys, linewidth=3, color='darkblue')
 
 # plot a vertical line for our measured difference in rates t-statistic
+ax.axvline(t, color='red', linestyle='--', lw=5)
 
-```
-
-
-```python
-
+plt.show()
 ```
 
 
@@ -287,10 +311,17 @@ Ley's calculate the critical t using this formula and confirm our earlier findin
 
 ```python
 # Calculate critical t value
-t_crit = None
+t_crit = stats.t.ppf(1-0.05, df)
 t_crit
 # 1.711
 ```
+
+
+
+
+    1.7108820799094275
+
+
 
 As we can see , the critical value returned from the function (rounded off 2 two decimal places) is same as one we found the in t-distribution table i.e. 1.711. 
 
@@ -321,10 +352,14 @@ We use a one-tailed t-test as we are looking for an increase in the sales perfor
 
 
 ```python
-results = None     
+results = stats.ttest_1samp(sample, mu, nan_policy='propagate', axis=0)     
 #  Print results
 # The t-value for sample is 3.58 and the p-value is 0.0015
+print(results)
 ```
+
+    Ttest_1sampResult(statistic=3.578139767278185, pvalue=0.0015178945415114085)
+
 
 We can use our null and alternate hypothesis defined earlier to state the results from our findings using if-else conditions to reject Ho/Ha. 
 
