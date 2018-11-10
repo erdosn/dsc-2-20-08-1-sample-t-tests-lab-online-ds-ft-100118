@@ -207,7 +207,7 @@ sns.distplot(sample)
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x1a158eb400>
+    <matplotlib.axes._subplots.AxesSubplot at 0x1a1231fcc0>
 
 
 
@@ -384,10 +384,17 @@ Lets calculate the Cohen'd for our sample using the formula above:
 
 ```python
 # Calculate Cohen's d and round off 
-d = None
+d = (x_bar-mu)/sigma
 d
 # 0.73
 ```
+
+
+
+
+    0.730384721516042
+
+
 
 
 Following cohen's interpretation, we can confidently say that the sample mean shifts considerably towards positive side as compared to the population means, resulting in a large effect size. This also help us conclude that training has a a clear effect on the sales performance of the sales team, when compared to pre-sales performance. 
@@ -402,22 +409,35 @@ Create a function in python `one_sample_ttest(sample, popmean, alpha)` that will
 def one_sample_ttest(sample, popmean, alpha):
 
     # Visualize sample distribution for normality 
-
+    sns.set(color_codes=True)
+    sns.set(rc={'figure.figsize':(12,10)})
+    sns.distplot(sample)
+    plt.show()
     
     # Population mean 
+    mu = popmean
 
     # Sample mean (x̄) using NumPy mean()
+    x_bar = sample.mean()
 
     # Sample Stadrad Deviation (sigma) using Numpy
+    sigma = sample.std()
     
     # Degrees of freedom
+    df = sample.size - 1
     
-    #Calculate the critical t-value
+   #Calculate the critical t-value
+    t_crit = stats.t.ppf(1-alpha, df)
     
-    #Calculate the t-value and p-value      
+    #Calculate the t-value and p-value
+    results = stats.ttest_1samp(a= sample, popmean= mu)         
     
-    #return results
-    return None
+    if (results[0]>t_crit) and (results[1]<alpha):
+        print ("Null hypothesis rejected. Results are statistically significant with t-value =", 
+                round(results[0], 2), "critical t-value =", t_crit, "and p-value =", np.round((results[1]), 10))
+    else:
+        print ("Null hypothesis is True with t-value =", 
+                round(results[0], 2), ", critical t-value =", t_crit, "and p-value =", np.round((results[1]), 10))
 ```
 
 ### Exercise 2:
@@ -439,28 +459,40 @@ The mean score of the class before the test is 65. The teacher thinks that the o
 
 
 ```python
-
+sample=np.array([84.0, 92.4, 74.3, 79.4, 86.7, 75.3, 90.9, 86.1, 81.0, 85.1, 
+        78.7, 73.5, 86.9, 87.4, 82.7, 81.9, 69.9, 77.2, 79.3, 83.3])
+one_sample_ttest(sample, 65, 0.001)
 ```
 
-    Null hypothesis rejected. Results are statistically significant with t-value = 12.69 critical t-value = 3.579400148163749 and p-value = 1e-10
+    /anaconda3/lib/python3.6/site-packages/matplotlib/axes/_axes.py:6462: UserWarning: The 'normed' kwarg is deprecated, and has been replaced by the 'density' kwarg.
+      warnings.warn("The 'normed' kwarg is deprecated, and has been "
 
 
 
 ![png](index_files/index_40_1.png)
 
 
+    Null hypothesis rejected. Results are statistically significant with t-value = 12.69 critical t-value = 3.579400148163749 and p-value = 1e-10
+
+
 ### Solution 2:
 
 
 ```python
-
+sample_corrected=np.array([84.0, 92.4, 74.3, 79.4, 86.7, 75.3, 80.9, 86.1, 81.0, 85.1, 
+                           78.7, 73.5, 86.9, 87.4, 82.7, 81.9, 69.9, 77.2, 79.3, 83.3])
+one_sample_ttest(sample_corrected, 65, 0.001)
 ```
 
-    Null hypothesis rejected. Results are statistically significant with t-value = 13.2 critical t-value = 1.729132811521367 and p-value = 1e-10
+    /anaconda3/lib/python3.6/site-packages/matplotlib/axes/_axes.py:6462: UserWarning: The 'normed' kwarg is deprecated, and has been replaced by the 'density' kwarg.
+      warnings.warn("The 'normed' kwarg is deprecated, and has been "
 
 
 
 ![png](index_files/index_42_1.png)
+
+
+    Null hypothesis rejected. Results are statistically significant with t-value = 13.2 critical t-value = 3.579400148163749 and p-value = 1e-10
 
 
 ## Summary
